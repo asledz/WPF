@@ -55,7 +55,7 @@ let sr_wartosc x =
 
 
 (*Funkcja sprawdzająca, czy przedział jest ok, przydaje się w dodawaniu i odejmowaniu, do redukowania przedziałów niespójnych od neg inf do inf*)
-let redukuj x =
+let napraw x =
   match x with
   | Niespojny(a, b) ->
     if( a >=  b) then Spojny(neg_infinity, infinity)
@@ -81,33 +81,63 @@ let porzadkuj x =
 (*Funkcja licząca odwrotność przedziału *)
 let odwrotny x =
   match x with
+  | Niespojny (a, b) ->
+  if( a > 0. || b < 0.) then porzadkuj ( Niespojny (1. /. a, 1. /. b) )
+  else porzadkuj ( Spojny ( 1. /. a, 1. /.b ) )
   | Spojny( a, 0. ) -> Spojny (neg_infinity , 1. /. a)
   | Spojny( 0. , b) -> Spojny (1. /. b , infinity)
   | Spojny( a, b ) ->
     if ( a < 0. && b > 0.) then porzadkuj (Niespojny(1. /. a , 1. /. b))
     else porzadkuj ( Spojny(1. /. a , 1. /. b) )
-  | Niespojny (a, b) ->
-    if( a > 0. || b < 0.) then porzadkuj ( Niespojny (1. /. a, 1. /. b) )
-    else porzadkuj ( Spojny ( 1. /. a, 1. /.b ) )  ;;
+;;
 
+(* w tej funkcji trzeba jeszcze wyifować nany jeśli jest to potrzebne??*)
+let mnozenie_spojnych x y =
+  match x, y with
+  | Spojny(a, b), Spojny(c, d) ->
+    Spojny ( ( min (min (a*.c) (a*.d ) ) (min (b*.c)(b*.d) ) )
+          ,( max ( max(a *. c) (a *. d) ) ( max( b *.c ) (b *. d) ) ) )
+  | _,_ -> Spojny(0. , 0.);;
 
-
+let rec lacz x y =
+    match x, y with
+    | Spojny (a , b), Spojny(c, d) ->
+      if a < c then
+        if b >= c then Spojny(a, d)
+        else Niespojny( b, c )
+      else lacz y x (*inaczej zamień je miejscami*)
+    | Niespojny(a, b) , Spojny(c, d) ->
+      let przed1 = Spojny (neg_infinity, (if a >= c then d else a) )
+      and przed2 = Spojny ( (if b <= d then c else b), infinity )
+      in lacz przed1 przed2
+    | Spojny( _,_ ) , Niespojny( _,_ ) -> lacz y x (*Zmieniam kolejność*)
+    | Niespojny(a, b), Niespojny(c, d) ->
+      let przed1 = Spojny(neg_infinity, max a c)
+      and przed2 = Spojny(min b d, infinity)
+      in lacz przed1 przed2
+;;
 (*============ MODYFIKATORY ============*)
 
 let rec plus x y =
   match x, y with
-  | Spojny( a , b ) , Spojny( c , d ) -> redukuj ( Spojny ( a +. c , b +. d) )
-  | Spojny( a , b ) , Niespojny( c , d ) -> redukuj ( Niespojny ( c +. a , d +.b ) )
+  | Spojny( a , b ) , Spojny( c , d ) -> napraw ( Spojny ( a +. c , b +. d) )
+  | Spojny( a , b ) , Niespojny( c , d ) -> napraw ( Niespojny ( c +. a , d +.b ) )
   | Niespojny( a , b ) , Spojny ( c , d ) -> plus y x
-  | Niespojny( a , b ) , Niespojny ( c , d ) -> redukuj ( Spojny (neg_infinity, infinity) );; (*Suma może być jakakolwiek*)
+  | Niespojny( a , b ) , Niespojny ( c , d ) -> napraw ( Spojny (neg_infinity, infinity) );; (*lacz może być jakakolwiek*)
 
 let minus x y =
   plus x (przeciwny y);;
 
 
 let rec razy x y =
-
+  match x, y with
+  | Spojny (a, b) , Spojny (c, d) -> mnozenie_spojnych x y
+  | Niespojny(a, b) , _ ->
+    let przed1 = Spojny (neg_infinity, a)
+    and przed2 = Spojny (b, infinity)
+    in lacz ( razy przed1 y ) (razy przed2 y)
+  | _ , _ -> razy y x
 ;;
 
 let rec dziel x y =
-  razy x ( odwrotny y) ;;
+  razy x ( odwrotny y ) ;;
