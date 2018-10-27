@@ -49,26 +49,24 @@ let sr_wartosc x =
   in
   if minimum = neg_infinity || maksimum = infinity
     then nan
-  else (minimum +. maksimum) /. 2 ;;
+  else (minimum +. maksimum) /. 2. ;;
 
 (*============ FUNKCJE POMOCNICZE ============*)
 
 
-(*Funkcja sprawdzająca, czy przedział jes ok, przydaje się w dodawaniu i odejmowaniu*)
+(*Funkcja sprawdzająca, czy przedział jest ok, przydaje się w dodawaniu i odejmowaniu, do redukowania przedziałów niespójnych od neg inf do inf*)
 let redukuj x =
   match x with
-  | Spojny(a, b) ->
-    if(a >= b) then Spojny(neg_infinity, infinity)
-    else x
   | Niespojny(a, b) ->
     if( a >=  b) then Spojny(neg_infinity, infinity)
-    else x;;
+    else x
+  | Spojny(_,_) -> x;;
 
 (* Funkcja zmieniająca przedział na przedział jemu przeciwny(ujemny), przydaje się w odejmowaniu*)
 let przeciwny x =
   match x with
-  | Spojny (a, b) -> Spojny ( -.b , -.a )
-  | Niespojny ( a, b ) -> Niespojny ( -.b -.a) ;;
+  | Spojny (a, b) -> Spojny ( -1. *. b , -1. *. a )
+  | Niespojny ( a, b ) -> Niespojny ( -1. *. b , -1. *. a) ;;
 
 (* Funkcja porządkująca przedziały - jeśli a > b, to swap a z b , przydaje się w odwrotności*)
 let porzadkuj x =
@@ -83,14 +81,15 @@ let porzadkuj x =
 (*Funkcja licząca odwrotność przedziału *)
 let odwrotny x =
   match x with
-  | Spojny( a, 0. ) -> Spojny (neg_infinity , 1 /. a)
-  | Spojny( 0. , b) -> Spojny (1 /. b , infinity)
+  | Spojny( a, 0. ) -> Spojny (neg_infinity , 1. /. a)
+  | Spojny( 0. , b) -> Spojny (1. /. b , infinity)
   | Spojny( a, b ) ->
-    if ( a < 0 && b > 0) then porzadkuj (Niespojny(1 /. a , 1 /. b)) (*Zawiera w sobie zero - obraca się w drugą stronę*)
-    else porzadkuj ( Spojny(1 /. a , 1 /. b) )
+    if ( a < 0. && b > 0.) then porzadkuj (Niespojny(1. /. a , 1. /. b))
+    else porzadkuj ( Spojny(1. /. a , 1. /. b) )
   | Niespojny (a, b) ->
-    if( a > 0 || b < 0) then porzadkuj ( Niespojny (1 /. a, 1 /. b) ) (*Zawiera w sobie zero*)
-    else porzadkuj ( Spojny ( 1 /. a, 1 /.b ) )  ;;
+    if( a > 0. || b < 0.) then porzadkuj ( Niespojny (1. /. a, 1. /. b) )
+    else porzadkuj ( Spojny ( 1. /. a, 1. /.b ) )  ;;
+
 
 
 (*============ MODYFIKATORY ============*)
