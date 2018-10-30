@@ -140,11 +140,13 @@ let rec lacz x y =
 
 (*============ MODYFIKATORY ============*)
 
+
+
 let rec plus x y =
   match x, y with
   |Spojny(a, b) , Spojny(c, d) -> Spojny(a +. c, b +. d )
   |Niespojny(a, b), Spojny(c, d) -> lacz(Spojny( neg_infinity, a +.d )) (Spojny( b +. c , infinity))
-  |Spojny(_,_), Niespojny(_,_) -> plus y x
+  |Spojny(a,b), Niespojny(c,d) -> lacz(Spojny( neg_infinity, b +.c )) (Spojny( a +. d , infinity))
   |Niespojny(a, b), Niespojny(c, d) -> Spojny(neg_infinity, infinity );;
 
 let minus x y =
