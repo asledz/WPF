@@ -105,7 +105,10 @@ let rec lacz x y =
       if a < c then
         if b >= c then Spojny(a, d)
         else Niespojny( b, c )
-      else lacz y x (*inaczej zamień je miejscami*)
+      (*else lacz y x (*inaczej zamień je miejscami*) *)
+      else
+        if d >= a then Spojny(c, b)
+        else Niespojny(d, a)
     | Niespojny(a, b) , Spojny(c, d) ->
       let przed1 = Spojny (neg_infinity, (if a >= c then d else a) )
       and przed2 = Spojny ( (if b <= d then c else b), infinity )
@@ -116,6 +119,11 @@ let rec lacz x y =
       and przed2 = Spojny(min b d, infinity)
       in lacz przed1 przed2
 ;;
+
+let modul x =
+  if x < 0 then -1 *. x
+  else x ;;
+
 (*============ MODYFIKATORY ============*)
 
 let rec plus x y =
@@ -135,9 +143,20 @@ let rec razy x y =
   | Niespojny(a, b) , _ ->
     let przed1 = Spojny (neg_infinity, a)
     and przed2 = Spojny (b, infinity)
-    in lacz ( razy przed1 y ) (razy przed2 y)
+    in lacz ( razy y przed1 ) (razy y przed2)
   | _ , _ -> razy y x
 ;;
 
-let rec dziel x y =
-  razy x ( odwrotny y ) ;;
+let modul a:float =
+  if a < 0. then a *. -1.
+  else a;;
+
+let rec podzielic x y =
+  match y with
+  | Spojny (a , b) ->
+    if modul(a) = 0. && modul(b) = 0. then Niespojny(neg_infinity , infinity)
+    else
+      if (a = neg_infinity && b = infinity) then razy x (Spojny (a, b))
+      else razy x (odwrotny y)
+  | Niespojny (a, b) -> lacz( podzielic x (Spojny(neg_infinity, a)) ) ( podzielic x(Spojny(b, infinity)) );;
+
