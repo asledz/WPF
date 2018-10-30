@@ -21,7 +21,7 @@ let wartosc_od_do x y =
   Spojny( x , y );;
 
 let wartosc_dokladna x =
-  Spojny ( x, x );;
+  Spojny ( x , x );;
 
 (*============ SELEKTORY ============*)
 
@@ -34,12 +34,14 @@ let in_wartosc x y =
 (* Funkcja znajdująca najmniejszą wartość przedziału x *)
 let min_wartosc x =
   match x with
+  | Niespojny(neg_infinity, infinity) -> nan
   | Spojny( lewy , _ ) -> lewy
   | Niespojny( _ , _ ) -> neg_infinity;;
 
 (* Funkcja znajdująca największą wartość przedziału x*)
 let max_wartosc x =
   match x with
+  | Niespojny(neg_infinity, infinity) -> nan
   | Spojny( _ , prawy ) -> prawy
   | Niespojny ( _ , _ ) -> infinity ;;
 
@@ -91,7 +93,6 @@ let odwrotny x =
     else porzadkuj ( Spojny(1. /. a , 1. /. b) )
 ;;
 
-(* w tej funkcji trzeba jeszcze wyifować nany jeśli jest to potrzebne??*)
 let mnozenie_spojnych x y =
   match x, y with
   | Spojny(a, b), Spojny(c, d) ->
@@ -120,8 +121,8 @@ let rec lacz x y =
       in lacz przed1 przed2
 ;;
 
-let modul x =
-  if x < 0 then -1 *. x
+let modul x:float =
+  if x < 0. then  x *. -1.
   else x ;;
 
 (*============ MODYFIKATORY ============*)
@@ -147,9 +148,6 @@ let rec razy x y =
   | _ , _ -> razy y x
 ;;
 
-let modul a:float =
-  if a < 0. then a *. -1.
-  else a;;
 
 let rec podzielic x y =
   match y with
@@ -158,5 +156,6 @@ let rec podzielic x y =
     else
       if (a = neg_infinity && b = infinity) then razy x (Spojny (a, b))
       else razy x (odwrotny y)
-  | Niespojny (a, b) -> lacz( podzielic x (Spojny(neg_infinity, a)) ) ( podzielic x(Spojny(b, infinity)) );;
+  | Niespojny (a, b) -> lacz( podzielic x (Spojny(neg_infinity, a)) ) ( podzielic x(Spojny(b, infinity)) )
+  ;;
 
