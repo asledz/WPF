@@ -1,3 +1,4 @@
 # WPF
-Wstęp do programowania - potok funkcyjny
+Wstęp do programowania - potok funkcyjny ;
+
 Introduction to functional programming - MIMUW
