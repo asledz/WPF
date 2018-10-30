@@ -79,7 +79,9 @@ let napraw x =
 let przeciwny x =
   match x with
   | Spojny (a, b) -> Spojny ( -1. *. b , -1. *. a )
-  | Niespojny ( a, b ) -> Niespojny ( -1. *. b , -1. *. a) ;;
+  | Niespojny ( a, b ) ->
+    if a = neg_infinity && b = infinity then x else
+    Niespojny ( -1. *. b , -1. *. a) ;;
 
 (* Funkcja porządkująca przedziały - jeśli a > b, to swap a z b , przydaje się w odwrotności*)
 let porzadkuj x =
@@ -121,7 +123,7 @@ let mnozenie_spojnych x y =
 let rec lacz x y =
     match x, y with
     | Spojny (a , b), Spojny(c, d) ->
-      if a <= c then
+      if a < c then
         if b >= c then Spojny(a, d)
         else Niespojny( b, c )
       else
@@ -131,7 +133,10 @@ let rec lacz x y =
       let przed1 = Spojny (neg_infinity, (if a >= c then d else a) )
       and przed2 = Spojny ( (if b <= d then c else b), infinity )
       in lacz przed1 przed2
-    | Spojny( _,_ ) , Niespojny( _,_ ) -> lacz y x (*Zmieniam kolejność*)
+    | Spojny(c, d), Niespojny(a, b) ->
+      let przed1 = Spojny (neg_infinity, (if a >= c then d else a) )
+      and przed2 = Spojny ( (if b <= d then c else b), infinity )
+      in lacz przed1 przed2
     | Niespojny(a, b), Niespojny(c, d) ->
       let przed1 = Spojny(neg_infinity, max a c)
       and przed2 = Spojny(min b d, infinity)
@@ -167,7 +172,7 @@ let rec razy x y =
 
 
 let rec podzielic x y =
-  if x = Niespojny(neg_infinity, infinity) || y = Niespojny(neg_infinity, infinity) then Niespojny(neg_infinity, infinity) else  
+  if x = Niespojny(neg_infinity, infinity) || y = Niespojny(neg_infinity, infinity) then Niespojny(neg_infinity, infinity) else
   match y with
   | Spojny (a , b) ->
     if modul(a) = 0. && modul(b) = 0. then Niespojny(neg_infinity , infinity)
