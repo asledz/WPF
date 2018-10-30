@@ -14,7 +14,7 @@ type wartosc =
 (*============ KONSTRUKTORY ============*)
 
 let wartosc_dokladnosc x p =
-  let blad = abs_float( x *. p /. 100.0 )
+  let blad = abs_float( x *. (p /. 100.0 ))
   in Spojny((x -. blad , x +. blad));;
 
 let wartosc_od_do x y =
@@ -143,6 +143,7 @@ let rec lacz x y =
 
 
 let rec plus x y =
+  if x = Niespojny(neg_infinity, infinity) || y = Niespojny(neg_infinity, infinity) then Niespojny(neg_infinity, infinity) else
   match x, y with
   |Spojny(a, b) , Spojny(c, d) -> Spojny(a +. c, b +. d )
   |Niespojny(a, b), Spojny(c, d) -> lacz(Spojny( neg_infinity, a +.d )) (Spojny( b +. c , infinity))
@@ -154,6 +155,7 @@ let minus x y =
 
 
 let rec razy x y =
+  if x = Niespojny(neg_infinity, infinity) || y = Niespojny(neg_infinity, infinity) then Niespojny(neg_infinity, infinity) else
   match x, y with
   | Spojny (a, b) , Spojny (c, d) -> mnozenie_spojnych x y
   | Niespojny(a, b) , _ ->
@@ -165,6 +167,7 @@ let rec razy x y =
 
 
 let rec podzielic x y =
+  if x = Niespojny(neg_infinity, infinity) || y = Niespojny(neg_infinity, infinity) then Niespojny(neg_infinity, infinity) else  
   match y with
   | Spojny (a , b) ->
     if modul(a) = 0. && modul(b) = 0. then Niespojny(neg_infinity , infinity)
