@@ -34,26 +34,37 @@ let in_wartosc x y =
 (* Funkcja znajdująca najmniejszą wartość przedziału x *)
 let min_wartosc x =
   match x with
-  | Niespojny(neg_infinity, infinity) -> nan
+  | Niespojny(a, b) ->
+    if a = neg_infinity && b = infinity then nan
+    else neg_infinity
   | Spojny( lewy , _ ) -> lewy
-  | Niespojny( _ , _ ) -> neg_infinity;;
+;;
 
 (* Funkcja znajdująca największą wartość przedziału x*)
 let max_wartosc x =
   match x with
-  | Niespojny(neg_infinity, infinity) -> nan
+  | Niespojny(a, b) ->
+    if a = neg_infinity && b = infinity then nan
+    else infinity
   | Spojny( _ , prawy ) -> prawy
-  | Niespojny ( _ , _ ) -> infinity ;;
+;;
 
 (* Funkcja znajdująca średni element przedziału x *)
 let sr_wartosc x =
-  let minimum = min_wartosc x and maksimum = max_wartosc x
-  in
-  if minimum = neg_infinity || maksimum = infinity
-    then nan
-  else (minimum +. maksimum) /. 2. ;;
+  if x = Niespojny(neg_infinity, infinity) then nan
+  else
+    let minimum = min_wartosc x and maksimum = max_wartosc x
+    in
+    if minimum = neg_infinity && maksimum = infinity
+      then nan
+    else (minimum +. maksimum) /. 2. ;;
 
 (*============ FUNKCJE POMOCNICZE ============*)
+
+
+let modul x:float =
+  if x < 0. then  x *. -1.
+  else x ;;
 
 
 (*Funkcja sprawdzająca, czy przedział jest ok, przydaje się w dodawaniu i odejmowaniu, do redukowania przedziałów niespójnych od neg inf do inf*)
@@ -93,20 +104,26 @@ let odwrotny x =
     else porzadkuj ( Spojny(1. /. a , 1. /. b) )
 ;;
 
+let mnoz_ignoruj_nan a b =
+  if a *. b <> a *. b then 0.
+  else a *. b;;
+
+
 let mnozenie_spojnych x y =
   match x, y with
   | Spojny(a, b), Spojny(c, d) ->
-    Spojny ( ( min (min (a*.c) (a*.d ) ) (min (b*.c)(b*.d) ) )
-          ,( max ( max(a *. c) (a *. d) ) ( max( b *.c ) (b *. d) ) ) )
+    if (modul a = 0. && modul b = 0. ) || (modul c = 0. && modul d = 0.) then Spojny ( 0. , 0.)
+    else
+      Spojny ( ( min (min (mnoz_ignoruj_nan a c) (mnoz_ignoruj_nan a d ) ) (min (mnoz_ignoruj_nan b c)(mnoz_ignoruj_nan b d) ) )
+            ,( max ( max(mnoz_ignoruj_nan a c) (mnoz_ignoruj_nan a d) ) ( max( mnoz_ignoruj_nan b c ) ( mnoz_ignoruj_nan b d) ) ) )
   | _,_ -> Spojny(0. , 0.);;
 
 let rec lacz x y =
     match x, y with
     | Spojny (a , b), Spojny(c, d) ->
-      if a < c then
+      if a <= c then
         if b >= c then Spojny(a, d)
         else Niespojny( b, c )
-      (*else lacz y x (*inaczej zamień je miejscami*) *)
       else
         if d >= a then Spojny(c, b)
         else Niespojny(d, a)
@@ -121,18 +138,14 @@ let rec lacz x y =
       in lacz przed1 przed2
 ;;
 
-let modul x:float =
-  if x < 0. then  x *. -1.
-  else x ;;
-
 (*============ MODYFIKATORY ============*)
 
 let rec plus x y =
   match x, y with
-  | Spojny( a , b ) , Spojny( c , d ) -> napraw ( Spojny ( a +. c , b +. d) )
-  | Spojny( a , b ) , Niespojny( c , d ) -> napraw ( Niespojny ( c +. a , d +.b ) )
-  | Niespojny( a , b ) , Spojny ( c , d ) -> plus y x
-  | Niespojny( a , b ) , Niespojny ( c , d ) -> napraw ( Spojny (neg_infinity, infinity) );; (*lacz może być jakakolwiek*)
+  |Spojny(a, b) , Spojny(c, d) -> Spojny(a +. c, b +. d )
+  |Niespojny(a, b), Spojny(c, d) -> lacz(Spojny( neg_infinity, a +.d )) (Spojny( b +. c , infinity))
+  |Spojny(_,_), Niespojny(_,_) -> plus y x
+  |Niespojny(a, b), Niespojny(c, d) -> Spojny(neg_infinity, infinity );;
 
 let minus x y =
   plus x (przeciwny y);;
@@ -157,5 +170,4 @@ let rec podzielic x y =
       if (a = neg_infinity && b = infinity) then razy x (Spojny (a, b))
       else razy x (odwrotny y)
   | Niespojny (a, b) -> lacz( podzielic x (Spojny(neg_infinity, a)) ) ( podzielic x(Spojny(b, infinity)) )
-  ;;
-
+;;
