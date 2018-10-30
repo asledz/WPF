@@ -66,15 +66,6 @@ let modul x:float =
   if x < 0. then  x *. -1.
   else x ;;
 
-
-(*Funkcja sprawdzająca, czy przedział jest ok, przydaje się w dodawaniu i odejmowaniu, do redukowania przedziałów niespójnych od neg inf do inf*)
-let napraw x =
-  match x with
-  | Niespojny(a, b) ->
-    if( a >=  b) then Spojny(neg_infinity, infinity)
-    else x
-  | Spojny(_,_) -> x;;
-
 (* Funkcja zmieniająca przedział na przedział jemu przeciwny(ujemny), przydaje się w odejmowaniu*)
 let przeciwny x =
   match x with
@@ -94,10 +85,11 @@ let porzadkuj x =
     else Niespojny (a, b);;
 
 (*Funkcja licząca odwrotność przedziału *)
+
 let odwrotny x =
   match x with
   | Niespojny (a, b) ->
-  if( a > 0. || b < 0.) then porzadkuj ( Niespojny (1. /. a, 1. /. b) )
+  if( a > 0. && b < 0.) then porzadkuj ( Niespojny (1. /. a, 1. /. b) )
   else porzadkuj ( Spojny ( 1. /. a, 1. /.b ) )
   | Spojny( a, 0. ) -> Spojny (neg_infinity , 1. /. a)
   | Spojny( 0. , b) -> Spojny (1. /. b , infinity)
@@ -105,6 +97,7 @@ let odwrotny x =
     if ( a < 0. && b > 0.) then porzadkuj (Niespojny(1. /. a , 1. /. b))
     else porzadkuj ( Spojny(1. /. a , 1. /. b) )
 ;;
+
 
 let mnoz_ignoruj_nan a b =
   if a *. b <> a *. b then 0.
@@ -170,14 +163,16 @@ let rec razy x y =
   | _ , _ -> razy y x
 ;;
 
-
 let rec podzielic x y =
   if x = Niespojny(neg_infinity, infinity) || y = Niespojny(neg_infinity, infinity) then Niespojny(neg_infinity, infinity) else
   match y with
   | Spojny (a , b) ->
     if modul(a) = 0. && modul(b) = 0. then Niespojny(neg_infinity , infinity)
     else
-      if (a = neg_infinity && b = infinity) then razy x (Spojny (a, b))
+      if a = neg_infinity && b = infinity then razy x y
       else razy x (odwrotny y)
-  | Niespojny (a, b) -> lacz( podzielic x (Spojny(neg_infinity, a)) ) ( podzielic x(Spojny(b, infinity)) )
+  | Niespojny (a, b) ->
+    let przedz1 = Spojny(neg_infinity, a)
+    and przed2 = Spojny(b, infinity)
+    in lacz (podzielic x przedz1 ) (podzielic x przed2)
 ;;
