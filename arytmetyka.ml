@@ -127,10 +127,10 @@ let rec lacz x y =
     match x, y with
     | Spojny (a , b), Spojny(c, d) ->
       if a < c then
-        if b >= c then Spojny(a, d)
+        if b >= c then Spojny(a, max b d)
         else Niespojny( b, c )
       else
-        if d >= a then Spojny(c, b)
+        if d >= a then Spojny(c, max b d)
         else Niespojny(d, a)
     | Niespojny(a, b) , Spojny(c, d) ->
       let przed1 = Spojny (neg_infinity, (if a >= c then d else a) )
@@ -163,7 +163,6 @@ let rec plus x y =
 
 let minus x y =
   plus x (przeciwny y);;
-
 
 let rec razy x y =
   if x = Niespojny(neg_infinity, infinity) || y = Niespojny(neg_infinity, infinity)
