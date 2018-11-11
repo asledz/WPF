@@ -58,5 +58,3 @@ let delete_min q =
   | Leaf -> raise Empty
   | Node( q1, q2, x, depth ) -> (x, join q1 q2 )
 ;;
-
-let sample2 = Node(Node(empty, empty, 3, 0), Node(empty, Node(empty, empty, 5, 0), 4, 1), 5, 2);;
