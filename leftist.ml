@@ -36,12 +36,12 @@ let rec join q p =
   match q, p with
   | Leaf, pom2 -> pom2
   | pom1, Leaf -> pom1
-  | Node( ql, qp, qx, qd ), Node( pl, pp, px, pd ) ->
-    if( qx > px ) then
+  | Node(ql, qp, qx, qd), Node(pl, pp, px, pd) ->
+    if(qx > px) then
       join p q
     else
       let pom = join qp p in
-      if( depth ql < depth pom ) then
+      if(depth ql < depth pom) then
         Node(pom, ql, qx, (depth ql) + 1)
       else
         Node(ql, pom, qx, (depth pom) + 1)
@@ -56,5 +56,5 @@ exception Empty;;
 let delete_min q =
   match q with
   | Leaf -> raise Empty
-  | Node( q1, q2, x, depth ) -> (x, join q1 q2 )
+  | Node(q1, q2, x, depth) -> (x, join q1 q2)
 ;;
