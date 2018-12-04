@@ -5,15 +5,12 @@
 
 *)
 
-
-(*
-Lewe poddrzewo * przedzial * prawe poddrzewo * wysokość * liczba elementów
-*)
-
+(*    Lewe poddrzewo * przedzial * prawe poddrzewo * wysokość * liczba elementów    *)
 type t =
   | Empty
   | Node of t * (int * int) * t * int * int
 ;;
+
 
 (* Bezpieczne dodawanie liczb *)
 let add_num a b =
@@ -24,15 +21,18 @@ let add_num a b =
     if b > min_int - a then a + b else min_int
 ;;
 
+
 let height = function
   | Node(_, _, _, h, _) -> h
   | Empty -> 0
 ;;
 
+
 let element = function
   | Node (_, _, _, _, e) -> e
   | Empty -> 0
 ;;
+
 
 (* Składa dwa poddrzewa z podanym przedziałem nie zawierającym się w lewym i prawym poddrzewie na górze *)
 let make l ((a, b) as k) r =
@@ -72,24 +72,32 @@ let bal l k r =
     | Empty -> assert false
   else make l k r
 ;;
+
+
 (*Znajduje najmniejszy element*)
 let rec min_elt = function
   | Node (Empty, k, _, _, _) -> k
   | Node (l, _, _, _, _) -> min_elt l
   | Empty -> raise Not_found
 ;;
+
+
 (*Usuwa najmniejszy element*)
 let rec remove_min_elt = function
   | Node (Empty, _, r, _, _) -> r
   | Node (l, k, r, _, _) -> bal (remove_min_elt l) k r
   | Empty -> invalid_arg "iSet.remove_min_elt"
 ;;
+
+
 (*Znajduje największy element*)
 let rec max_elt = function
   | Node (_, k, Empty, _, _) -> k
   | Node (_, _, r, _, _) -> max_elt r
   | Empty -> raise Not_found
 ;;
+
+
 (**Usuwa największy element*)
 let rec remove_max_elt = function
   | Node (l, _, Empty, _, _) -> l
@@ -97,10 +105,15 @@ let rec remove_max_elt = function
   | Empty -> invalid_arg "iSet.remove_max_elt"
 ;;
 
+
 let empty = Empty;;
 
+
 let is_empty set =
-  set = Empty;;
+  set = Empty
+;;
+
+
 (*Dodaje niewystępujący w secie przedział*)
 let rec add_one ((a, b) as x) = function
   | Node (l, ((c, d) as k), r, _, _) ->
@@ -110,6 +123,8 @@ let rec add_one ((a, b) as x) = function
       let right = add_one x r in bal l k right
   | Empty -> make Empty x Empty
 ;;
+
+
 (*Łączy lewe i prawe poddrzewo z v na szczycie*)
 let rec join l v r =
   match (l, r) with
@@ -121,6 +136,8 @@ let rec join l v r =
       if rh > lh + 2 then bal (join l v rl) rv rr
       else make l v r
 ;;
+
+
 (*Dzieli przedzał wg inta x*)
 let split x set =
   let rec loop x = function
@@ -136,6 +153,8 @@ let split x set =
         else
           let (lr, pres, rr) = loop x r in (join l v lr, pres, rr)
   in loop x set ;;
+
+
 (*Dodaje przedział a b do seta*)
 let rec add (a, b) set =
   let (l, _, _) = split a set
@@ -154,6 +173,7 @@ let rec add (a, b) set =
       else join l (a, b) r
 ;;
 
+
 let remove ((a, b)) set =
   let (l, _, _) = split a set
   and (_, _, r) = split b set
@@ -162,6 +182,7 @@ let remove ((a, b)) set =
   | (Empty, _) -> r
   | (_, Empty) -> l
   | (_,_) -> join l (min_elt r) (remove_min_elt r);;
+
 
 let mem a set =
   let rec loop = function
@@ -176,6 +197,7 @@ let iter f set =
   | Empty -> ()
   | Node (l, k, r, _, _) -> loop l; f k; loop r in
   loop set;;
+
 
 let fold f set acc =
   let rec loop acc = function
