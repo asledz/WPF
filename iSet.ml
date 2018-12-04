@@ -1,8 +1,21 @@
+(*
+  Zadanie iSet
+  Anita Śledź
+  Review - Jadwiga Czyżewska
+
+*)
+
+
+(*
+Lewe poddrzewo * przedzial * prawe poddrzewo * wysokość * liczba elementów
+*)
+
 type t =
   | Empty
   | Node of t * (int * int) * t * int * int
 ;;
 
+(* Bezpieczne dodawanie liczb *)
 let add_num a b =
   let (a, b) = ((min a b), (max a b)) in
   if a >= 0 then
@@ -21,6 +34,7 @@ let element = function
   | Empty -> 0
 ;;
 
+(* Składa dwa poddrzewa z podanym przedziałem nie zawierającym się w lewym i prawym poddrzewie na górze *)
 let make l ((a, b) as k) r =
   let (a, b) =  (if a = min_int then (a+1, (add_num b 1)) else a, b ) in
     let dlugosc = add_num (add_num b (-a)) 1
@@ -30,37 +44,9 @@ let make l ((a, b) as k) r =
     and h = (max(height l) (height r)) +1
   in Node(l, k, r, h, ile)
 ;;
-(*
-let bal l k r =
-  let hl = height l
-  and hr = height r in
-  if hl > hr + 2 then
-    match l with
-    | Node (ll, lk, lr, _, _) ->
-      if height ll >= height lr
-        then make ll lk (make lr k r)
-      else
-        (match lr with
-        | Node (lrl, lrk, lrr, _, _) ->
-          make (make ll lk lrl) lrk (make lrr k r)
-        | Empty -> assert false)
-    | Empty -> assert false
-  else
-    if hr > hl + 2 then
-      match r with
-      | Node (rl, rk, rr, _, _) ->
-        if height rr >= height rl
-          then make (make l k rl) rk rr
-        else
-          (match rl with
-          | Node (rll, rlk, rlr, _, _) ->
-            make (make l k rll) rlk (make rlr rk rr)
-          | Empty -> assert false)
-      | Empty -> assert false
-    else make l k r
-;;*)
 
 
+(*Balansuje drzewo z lewym prawym poddrzewem i przedziałem k*)
 let bal l k r =
   let hl = height l in
   let hr = height r in
@@ -86,46 +72,36 @@ let bal l k r =
     | Empty -> assert false
   else make l k r
 ;;
-
+(*Znajduje najmniejszy element*)
 let rec min_elt = function
   | Node (Empty, k, _, _, _) -> k
   | Node (l, _, _, _, _) -> min_elt l
   | Empty -> raise Not_found
 ;;
-
+(*Usuwa najmniejszy element*)
 let rec remove_min_elt = function
   | Node (Empty, _, r, _, _) -> r
   | Node (l, k, r, _, _) -> bal (remove_min_elt l) k r
   | Empty -> invalid_arg "iSet.remove_min_elt"
 ;;
-
+(*Znajduje największy element*)
 let rec max_elt = function
   | Node (_, k, Empty, _, _) -> k
   | Node (_, _, r, _, _) -> max_elt r
   | Empty -> raise Not_found
 ;;
-
+(**Usuwa największy element*)
 let rec remove_max_elt = function
   | Node (l, _, Empty, _, _) -> l
   | Node (l, k, r, _, _) -> bal l k (remove_max_elt r)
   | Empty -> invalid_arg "iSet.remove_max_elt"
 ;;
 
-
-let merge t1 t2 =
-  match t1, t2 with
-  | Empty, _ -> t2
-  | _, Empty -> t1
-  | _ ->
-    let k = min_elt t2 in
-    bal t1 k (remove_min_elt t2)
-;;
-
 let empty = Empty;;
 
 let is_empty set =
   set = Empty;;
-
+(*Dodaje niewystępujący w secie przedział*)
 let rec add_one ((a, b) as x) = function
   | Node (l, ((c, d) as k), r, _, _) ->
     if b < c then
@@ -134,7 +110,7 @@ let rec add_one ((a, b) as x) = function
       let right = add_one x r in bal l k right
   | Empty -> make Empty x Empty
 ;;
-
+(*Łączy lewe i prawe poddrzewo z v na szczycie*)
 let rec join l v r =
   match (l, r) with
   | (Empty, _) -> add_one v r
@@ -145,7 +121,7 @@ let rec join l v r =
       if rh > lh + 2 then bal (join l v rl) rv rr
       else make l v r
 ;;
-
+(*Dzieli przedzał wg inta x*)
 let split x set =
   let rec loop x = function
   | Empty -> (Empty, false, Empty)
@@ -160,7 +136,7 @@ let split x set =
         else
           let (lr, pres, rr) = loop x r in (join l v lr, pres, rr)
   in loop x set ;;
-
+(*Dodaje przedział a b do seta*)
 let rec add (a, b) set =
   let (l, _, _) = split a set
   and (_, _, r) = split b set
@@ -186,8 +162,6 @@ let remove ((a, b)) set =
   | (Empty, _) -> r
   | (_, Empty) -> l
   | (_,_) -> join l (min_elt r) (remove_min_elt r);;
-
-
 
 let mem a set =
   let rec loop = function
