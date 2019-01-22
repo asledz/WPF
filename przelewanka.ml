@@ -2,9 +2,12 @@
 (* Anita Śledź 406384 *)
 (* Review - Stanisław Strzelecki *)
 
+(* Zwraca nwd dwóch liczb lub 0 gdy a = b = 0*)
 let rec gcd a b =
 	if b = 0 then a else gcd b (a mod b);;
 
+(* Liczy liczbę ruchów potrzebną do uzyskania stanu opisanego
+w tablicy za pomocą szklanek o podanych pojemnościach*)
 let przelewanka tab =
 	let n = Array.length tab 
 	and mapa = Hashtbl.create 10 
@@ -39,7 +42,8 @@ let przelewanka tab =
 		) 
 	done;
 	
-	(* Jeśli jakikolwiek wynik końcowy nie dzieli się przez NWD pojemności lub nie ma żadnej kończącej się na stanie pełny/pusty, nie da się osiągnąć wyniku*)
+	(* Jeśli jakikolwiek wynik końcowy nie dzieli się przez NWD pojemności 
+	lub nie ma żadnej kończącej się na stanie pełny/pusty, nie da się osiągnąć wyniku*)
 	if (!is_div = false || !is_full = false) then (
 		if n = 0 then 0
 		else -1
